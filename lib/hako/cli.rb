@@ -11,6 +11,7 @@ module Hako
       rollback
       oneshot
       show-yaml
+      show-jsonnet
       status
       remove
       stop
@@ -200,6 +201,30 @@ module Hako
       def parser
         @parser ||= OptionParser.new do |opts|
           opts.banner = 'hako show-yaml FILE'
+          opts.version = VERSION
+        end
+      end
+    end
+
+    class ShowJsonnet
+      def run(argv)
+        parse!(argv)
+        require 'hako/jsonnet_loader'
+        puts JSON.pretty_generate(JsonnetLoader.new.load(Pathname.new(@jsonnnet_path)))
+      end
+
+      def parse!(argv)
+        parser.parse!(argv)
+        @jsonnnet_path = argv.first
+        if @jsonnnet_path.nil?
+          puts parser.help
+          exit 1
+        end
+      end
+
+      def parser
+        @parser ||= OptionParser.new do |opts|
+          opts.banner = 'hako show-jsonnet FILE'
           opts.version = VERSION
         end
       end
