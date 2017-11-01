@@ -1,5 +1,5 @@
 local fileProvider = std.native('provide.file');
-local provide(name) = fileProvider('{"path": "hello.env"}', name);
+local provide(name) = fileProvider(std.toString({path: 'hello.env'}), name);
 
 {
   scheduler: {
