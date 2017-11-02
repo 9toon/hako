@@ -210,10 +210,11 @@ module Hako
       def run(argv)
         parse!(argv)
         require 'hako/jsonnet_loader'
-        puts JSON.pretty_generate(JsonnetLoader.new.load(Pathname.new(@jsonnnet_path)))
+        puts JSON.pretty_generate(JsonnetLoader.new(@no_expand).load(Pathname.new(@jsonnnet_path)))
       end
 
       def parse!(argv)
+        @no_expand = false
         parser.parse!(argv)
         @jsonnnet_path = argv.first
         if @jsonnnet_path.nil?
@@ -226,6 +227,7 @@ module Hako
         @parser ||= OptionParser.new do |opts|
           opts.banner = 'hako show-jsonnet FILE'
           opts.version = VERSION
+          opts.on('-n', '--no-expand', 'Do not expand variables') { @no_expand = true }
         end
       end
     end
