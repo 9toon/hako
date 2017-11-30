@@ -16,7 +16,8 @@ scheduler:
         protocol: HTTP
       - port: 443
         protocol: HTTPS
-        certificate_arn: arn:aws:iam::012345678901:server-certificate/hello-lb-v2.example.com
+        certificate_arns:
+          - arn:aws:iam::012345678901:server-certificate/hello-lb-v2.example.com
     subnets:
       - subnet-XXXXXXXX
       - subnet-YYYYYYYY

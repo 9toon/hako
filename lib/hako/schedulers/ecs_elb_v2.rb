@@ -83,14 +83,24 @@ module Hako
             port: l.fetch('port'),
             default_actions: [{ type: 'forward', target_group_arn: target_group.target_group_arn }],
           }
-          certificate_arn = l.fetch('certificate_arn', nil)
-          if certificate_arn
-            params[:certificates] = [{ certificate_arn: certificate_arn }]
+          certificate_arns = Array(l.fetch('certificate_arns', nil) || l.fetch('certificate_arn', nil))
+          unless certificate_arns.empty?
+            params[:certificates] = [{ certificate_arn: certificate_arns.shift }]
           end
 
           unless listener_ports.include?(params[:port])
             listener = elb_client.create_listener(params).listeners[0]
             Hako.logger.info("Created listener #{listener.listener_arn}")
+
+            unless certificate_arns.empty?
+              certificate_arns.each do |certificate_arn|
+                certificate = elb_client.add_listener_certificates({
+                  listener_arn: listener.listener_arn,
+                  certificates: [{ certificate_arn: certificate_arn, is_default: false }],
+                }).certificates[0]
+                Hako.logger.info("Added certificate #{certificate.certificate_arn} to listener #{listener.listener_arn}")
+              end
+            end
           end
         end
 

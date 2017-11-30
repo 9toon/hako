@@ -313,6 +313,21 @@ RSpec.describe Hako::Schedulers::Ecs do
         ).and_return(Aws::ElasticLoadBalancingV2::Types::CreateListenerOutput.new(
           listeners: [Aws::ElasticLoadBalancingV2::Types::Listener.new(listener_arn: "arn:aws:elasticloadbalancing:ap-northeast-1:012345678901:listener/app/#{app.id}/0123456789abcdef/abcdef0123456789")],
         )).once
+        expect(elb_v2_client).to receive(:create_listener).with(
+          load_balancer_arn: load_balancer_arn,
+          protocol: 'HTTPS',
+          port: 1443,
+          default_actions: [{ type: 'forward', target_group_arn: target_group_arn }],
+          certificates: [{ certificate_arn: 'arn:aws:acm:ap-northeast-1:012345678901:certificate/01234567-89ab-cdef-0123-456789ghijkl' }],
+        ).and_return(Aws::ElasticLoadBalancingV2::Types::CreateListenerOutput.new(
+          listeners: [Aws::ElasticLoadBalancingV2::Types::Listener.new(listener_arn: "arn:aws:elasticloadbalancing:ap-northeast-1:012345678901:listener/app/#{app.id}/0123456789abcdef/abcdef0123456789")],
+        )).once
+        expect(elb_v2_client).to receive(:add_listener_certificates).with(
+          listener_arn: "arn:aws:elasticloadbalancing:ap-northeast-1:012345678901:listener/app/#{app.id}/0123456789abcdef/abcdef0123456789",
+          certificates: [{ certificate_arn: 'arn:aws:acm:ap-northeast-1:012345678901:certificate/01234567-89ab-cdef-0123-456789mnopqr', is_default: false }],
+        ).and_return(Aws::ElasticLoadBalancingV2::Types::AddListenerCertificatesOutput.new(
+          certificates: [Aws::ElasticLoadBalancingV2::Types::Certificate.new(certificate_arn: 'arn:aws:acm:ap-northeast-1:012345678901:certificate/01234567-89ab-cdef-0123-456789mnopqr', is_default: false)],
+        )).once
         expect(ecs_client).to receive(:create_service).with(create_service_params.merge(
           task_definition: task_definition_arn,
           load_balancers: [{
